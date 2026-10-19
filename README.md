@@ -1,3 +1,7 @@
+## Live Demo
+
+[Launch SynthetixMed Dashboard](https://synthetixmed.streamlit.app/)
+
 # SynthetixMed: Enterprise Clinical AI Data Drift & Governance Dashboard
 
 An interactive clinical AI post-deployment monitoring and data drift governance dashboard built with Python, Streamlit, and Evidently AI.
