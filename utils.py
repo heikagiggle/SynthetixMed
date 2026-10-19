@@ -1,4 +1,3 @@
-"""SynthetixMed AI Governance - schema-agnostic drift helpers (CSV/XPT inputs, any condition)."""
 from __future__ import annotations
 
 import hashlib
@@ -20,8 +19,7 @@ TARGET_HINTS = ("target", "label", "outcome", "diabet", "onset", "diagnos", "cla
                 "mortality", "readmi", "sepsis", "stroke", "cancer", "disease")
 SCENARIOS = {"Stable cohort": 0.0, "Moderate drift": 1.0, "Severe drift": 2.0}
 
-
-# ------------------------------------------------------------ loading ----
+# loading 
 def read_csv(raw: bytes) -> pd.DataFrame:
     for enc in ("utf-8", "utf-8-sig", "latin-1"):
         try:
@@ -53,7 +51,6 @@ def read_dataset(raw: bytes, filename: str) -> pd.DataFrame:
     raise ValueError("Unsupported format. Upload a .csv or extracted .xpt file (not a ZIP archive).")
 
 
-# Sentinel codes are dataset-specific. Never replace 7/9 globally: they can be
 # legitimate ages, scores, or measurements. The UI exposes additional overrides.
 COMMON_TEXT_MISSING = {"", "na", "n/a", "null", "none", "nan", "unknown", "missing", "refused", "don't know", "dont know", "not asked", "not applicable"}
 NEGATIVE_SENTINELS = {-1, -7, -8, -9, -77, -88, -99, -777, -888, -999, -9999}
@@ -117,7 +114,7 @@ def split_dataset(df, method, pct=70, col=None, values=None, seed=42):
     return b.reset_index(drop=True), c.reset_index(drop=True)
 
 
-# ------------------------------------------------------ schema logic ----
+#  schema logic 
 def guess_target(df: pd.DataFrame):
     binary = [c for c in df.columns if df[c].nunique(dropna=True) == 2]
     for hint in TARGET_HINTS:
@@ -143,7 +140,7 @@ def suggest_features(df: pd.DataFrame, target) -> list[str]:
         if c == target or s.nunique(dropna=True) <= 1 or is_id_like(s, c):
             continue
         if not pd.api.types.is_numeric_dtype(s) and s.nunique(dropna=True) > 50:
-            continue  # free text / dates / high-cardinality
+            continue 
         out.append(c)
     return out
 
@@ -177,7 +174,7 @@ def fingerprint(df: pd.DataFrame) -> str:
     return hashlib.sha256(pd.util.hash_pandas_object(df, index=False).values.tobytes()).hexdigest()[:16]
 
 
-# --------------------------------------------------------- statistics ----
+#  statistics 
 def psi_numeric(ref: np.ndarray, cur: np.ndarray, bins: int = 10) -> float:
     edges = np.unique(np.quantile(ref, np.linspace(0, 1, bins + 1)))
     if len(edges) < 3:  # near-constant column: compare by exact value instead
@@ -237,7 +234,7 @@ def drift_table(base, cur, feats, types, warn=0.10, crit=0.25) -> pd.DataFrame:
     return pd.DataFrame([r for r in rows if r])
 
 
-# ----------------------------------------------------- model health -----
+# - model health -
 def model_health(base, cur, feats, types, target) -> dict:
     """Fit a proxy model on baseline and score current data; not a deployed endpoint."""
     if not target or target not in base or target not in cur or base[target].nunique() != 2:
@@ -300,7 +297,7 @@ COMPLIANCE_MAP = [
 ]
 
 
-# -------------------------------------------------------- sample data ----
+#  sample data 
 def _generate(n, seed, male_p=0.5, smoke_p=(0.60, 0.25, 0.15)):
     rng = np.random.default_rng(seed)
     age = np.clip(rng.normal(52, 12, n), 18, 90)

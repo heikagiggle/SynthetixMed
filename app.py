@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 
 import numpy as np
 import pandas as pd
+from pathlib import Path
 import plotly.graph_objects as go
 import streamlit as st
 import streamlit.components.v1 as components
@@ -159,6 +160,32 @@ with st.sidebar:
                 raw_b, raw_c = U.split_dataset(full, method, **kw)
             else:
                 st.warning("Pick at least one baseline value.")
+
+        # Downloadable CDC test datasets
+    sample_dir = Path(__file__).resolve().parent / "sample_datasets"
+
+    with st.expander("📥 Download CDC Test Datasets"):
+        st.caption(
+            "Download the 2023 baseline and 2024 monitoring "
+            "samples to test the two-file upload workflow."
+        )
+
+        for label, filename in [
+            ("CDC 2023 Baseline", "cdc_2023_diabetes_sample.csv"),
+            ("CDC 2024 Monitoring", "cdc_2024_diabetes_sample.csv"),
+        ]:
+            path = sample_dir / filename
+
+            if path.exists():
+                st.download_button(
+                    label=label,
+                    data=path.read_bytes(),
+                    file_name=filename,
+                    mime="text/csv",
+                    use_container_width=True,
+                )
+            else:
+                st.caption(f"{filename} not found.")
 
     if raw_b is not None:
         st.markdown("**Data hygiene**")
